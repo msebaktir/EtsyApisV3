@@ -1,0 +1,57 @@
+﻿@using dotnetEtsyApp.Models.Cache
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    @if (ViewBag.Stores.Count == 0)
+    {
+        <p>There are no stores in the database.</p>
+    }
+    else
+    {
+        <p>There are @ViewBag.Stores.Count stores in the database.</p>
+
+        <ul>
+            @foreach (var store in ViewBag.Stores as List<StoreTokenData>)
+            {
+                <li>@store.StoreName - <span class=" ">@(store.isActive == true ? "Active" : "Inactive")</span> @{
+                    if(store.UserHaveActivateAccess && !store.isActive ){
+                        <a href="#" data-url="@store.reconnectUrl" class="btn btn-success activationAuth" data-storeid="@store.ID">Activate</a>
+                    }
+                } </li>
+            } 
+        </ul>
+    }
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+
+@section Scripts {
+    
+    <script>
+        document.querySelectorAll(".activationAuth").forEach(function (element) {
+          
+            element.onclick = function (e) {
+                e.preventDefault();
+                var url = this.getAttribute("data-url");
+                $.post("/Home/ActivateStore", { storeId: this.getAttribute("data-storeid") }, function (data) {
+                    console.log(data);
+                   
+                    var win = window.open(url, '_blank');
+                    win.focus();
+                    // read the message from the child window
+                    window.addEventListener('message', function (e) {
+                        console.log(e.data);
+                        if (e.data == true || e.data == "True") {
+                            location.reload();
+                        }
+                    }, false);
+                });
+              
+            };
+        });
+    </script>
+}
